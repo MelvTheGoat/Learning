@@ -1,0 +1,11 @@
+{
+  "id": "upstream-101",
+  "choices": [
+    {
+      "message": {"role": "assistant", "content": "A concise normalized answer."},
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {"prompt_tokens": 11, "completion_tokens": 7, "total_tokens": 18}
+}
+

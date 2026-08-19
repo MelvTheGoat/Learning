@@ -1,0 +1,2 @@
+Record the exact commands and unedited outputs used to validate the submission.
+
