@@ -1,0 +1,151 @@
+Record the exact commands and unedited outputs used to validate the submission.
+
+================================================================================
+1. Python analyzer — run against gateway_trace.csv
+================================================================================
+
+$ python python/analyze_trace.py fixtures/gateway_trace.csv
+
+{
+  "error_rate": 0.2,
+  "fallback_count": 7,
+  "fallback_rate": 0.35,
+  "latency_ms": {
+    "max": 2960,
+    "p50": 1210,
+    "p95": 2810,
+    "p99": 2960
+  },
+  "observed_rps": 9.3023,
+  "request_count": 20,
+  "status_counts": {
+    "200": 16,
+    "429": 2,
+    "503": 2
+  },
+  "success_rate": 0.8,
+  "tenants": {
+    "tenant-a": {
+      "errors": 4,
+      "requests": 12
+    },
+    "tenant-b": {
+      "errors": 0,
+      "requests": 4
+    },
+    "tenant-c": {
+      "errors": 0,
+      "requests": 4
+    }
+  },
+  "tokens": {
+    "completion": 762,
+    "prompt": 1987,
+    "total": 2749
+  }
+}
+
+================================================================================
+2. Python analyzer — determinism check (two runs produce identical output)
+================================================================================
+
+$ python python/analyze_trace.py fixtures/gateway_trace.csv > run1.json
+$ python python/analyze_trace.py fixtures/gateway_trace.csv > run2.json
+$ Compare-Object (Get-Content run1.json) (Get-Content run2.json)
+
+DETERMINISTIC: outputs are identical
+
+================================================================================
+3. Python analyzer — validation tests (nearest-rank percentile, malformed input rejection)
+================================================================================
+
+$ python -c "
+import sys; sys.path.insert(0, 'python')
+from analyze_trace import nearest_rank_percentile, summarize
+import csv, io
+
+vals = [100.0, 200.0, 300.0, 400.0, 500.0]
+assert nearest_rank_percentile(vals, 50) == 300.0
+assert nearest_rank_percentile(vals, 95) == 500.0
+assert nearest_rank_percentile(vals, 99) == 500.0
+assert nearest_rank_percentile(vals, 100) == 500.0
+assert nearest_rank_percentile([42.0], 50) == 42.0
+assert nearest_rank_percentile([42.0], 99) == 42.0
+assert nearest_rank_percentile([10.0, 20.0], 50) == 10.0
+
+try:
+    nearest_rank_percentile([], 50)
+    assert False
+except ValueError:
+    pass
+
+bad_csv = 'elapsed_ms,request_id,tenant_id,status_code,latency_ms,prompt_tokens,completion_tokens,model_requested,model_served,fallback_used,queue_depth\n0,r1,t1,200,100,abc,10,m,m,false,1'
+try:
+    summarize(csv.DictReader(io.StringIO(bad_csv)))
+    assert False
+except ValueError as e:
+    assert 'prompt_tokens' in str(e)
+    assert '1' in str(e)
+
+print('All Python validation tests passed.')
+"
+
+All Python validation tests passed.
+
+================================================================================
+4. Dart tests — run via Docker (dart:stable)
+================================================================================
+
+$ docker run --rm -v "<project>:/app" -w /app/dart dart:stable sh -c "dart pub get && dart test -r expanded"
+
+Resolving dependencies...
+Downloading packages...
+  lints 5.1.1 (6.1.0 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+00:00 +0: loading test/gateway_normalizer_test.dart
+00:00 +0: test/gateway_normalizer_test.dart: GatewayNormalizer normalizes the supplied OpenAI-compatible success fixture
+00:01 +1: test/gateway_normalizer_test.dart: GatewayNormalizer does not fallback after authentication failure
+00:01 +2: test/gateway_normalizer_test.dart: GatewayNormalizer normalizes the internal provider success fixture
+00:01 +3: test/gateway_normalizer_test.dart: GatewayNormalizer OpenAI success preserves all token fields
+00:01 +4: test/gateway_normalizer_test.dart: GatewayNormalizer completedAt is stored as UTC
+00:01 +5: test/gateway_normalizer_test.dart: GatewayNormalizer throws FormatException for malformed payload (empty choices)
+00:01 +6: test/gateway_normalizer_test.dart: GatewayNormalizer throws FormatException for unrecognized response shape
+00:01 +7: test/gateway_normalizer_test.dart: GatewayNormalizer maps 429 to rate_limited
+00:01 +8: test/gateway_normalizer_test.dart: GatewayNormalizer maps 413 to context_length_exceeded
+00:01 +9: test/gateway_normalizer_test.dart: GatewayNormalizer maps 401 to auth_error
+00:01 +10: test/gateway_normalizer_test.dart: GatewayNormalizer maps 403 to auth_error
+00:01 +11: test/gateway_normalizer_test.dart: GatewayNormalizer maps content_filtered error code from payload
+00:01 +12: test/gateway_normalizer_test.dart: GatewayNormalizer content filter error message never contains authorization credentials
+00:01 +13: test/gateway_normalizer_test.dart: GatewayNormalizer maps timedOut=true to timeout
+00:01 +14: test/gateway_normalizer_test.dart: GatewayNormalizer maps 504 to timeout
+00:01 +15: test/gateway_normalizer_test.dart: GatewayNormalizer maps 500 to provider_unavailable
+00:01 +16: test/gateway_normalizer_test.dart: GatewayNormalizer maps 503 to provider_unavailable
+00:01 +17: test/gateway_normalizer_test.dart: GatewayNormalizer maps unrecognized status code to invalid_provider_response
+00:01 +18: test/gateway_normalizer_test.dart: GatewayNormalizer maps null status code and no timeout to invalid_provider_response
+00:01 +19: test/gateway_normalizer_test.dart: GatewayNormalizer permits fallback for timeout with all conditions met
+00:01 +20: test/gateway_normalizer_test.dart: GatewayNormalizer permits fallback for provider_unavailable
+00:01 +21: test/gateway_normalizer_test.dart: GatewayNormalizer blocks fallback when no fallback configured
+00:01 +22: test/gateway_normalizer_test.dart: GatewayNormalizer blocks fallback when already attempted
+00:01 +23: test/gateway_normalizer_test.dart: GatewayNormalizer blocks fallback when fallback is same provider and model
+00:01 +24: test/gateway_normalizer_test.dart: GatewayNormalizer does not fallback for rate_limited
+00:01 +25: test/gateway_normalizer_test.dart: GatewayNormalizer does not fallback for content_filtered
+00:01 +26: test/gateway_normalizer_test.dart: GatewayNormalizer does not fallback for invalid_provider_response
+00:01 +27: test/gateway_normalizer_test.dart: GatewayNormalizer decideFallback always provides a machine-readable reason
+00:01 +28: test/gateway_normalizer_test.dart: cosineSimilarity identical vectors have similarity 1.0
+00:01 +29: test/gateway_normalizer_test.dart: cosineSimilarity opposite vectors have similarity -1.0
+00:01 +30: test/gateway_normalizer_test.dart: cosineSimilarity orthogonal vectors have similarity 0.0
+00:01 +31: test/gateway_normalizer_test.dart: cosineSimilarity works with floating-point values
+00:01 +32: test/gateway_normalizer_test.dart: cosineSimilarity works with mixed positive and negative values
+00:01 +33: test/gateway_normalizer_test.dart: cosineSimilarity throws for empty left vector
+00:01 +34: test/gateway_normalizer_test.dart: cosineSimilarity throws for empty right vector
+00:01 +35: test/gateway_normalizer_test.dart: cosineSimilarity throws for both vectors empty
+00:01 +36: test/gateway_normalizer_test.dart: cosineSimilarity throws for dimension mismatch
+00:01 +37: test/gateway_normalizer_test.dart: cosineSimilarity throws for zero-norm left vector
+00:01 +38: test/gateway_normalizer_test.dart: cosineSimilarity throws for zero-norm right vector
+00:01 +39: test/gateway_normalizer_test.dart: cosineSimilarity throws for NaN in left vector
+00:01 +40: test/gateway_normalizer_test.dart: cosineSimilarity throws for infinity in right vector
+00:01 +41: test/gateway_normalizer_test.dart: cosineSimilarity throws for negative infinity
+00:01 +42: test/gateway_normalizer_test.dart: cosineSimilarity does not pad shorter vectors to match
+00:01 +43: All tests passed!

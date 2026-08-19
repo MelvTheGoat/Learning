@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "content_filtered",
+    "message": "Request blocked by provider policy.",
+    "authorization": "Bearer do-not-copy-this-field"
+  }
+}
