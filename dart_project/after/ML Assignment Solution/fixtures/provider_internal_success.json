@@ -1,0 +1,7 @@
+{
+  "request_id": "internal-202",
+  "output": {"text": "Internal provider result."},
+  "usage": {"promptTokens": 9, "completionTokens": 4, "totalTokens": 13},
+  "finishReason": "stop",
+  "diagnostics": {"model": "candidate-code-model", "queue_ms": 42}
+}
