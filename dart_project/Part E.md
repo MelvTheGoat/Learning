@@ -1,9 +1,3 @@
----
-title: "Part E — Interview Questions"
-subtitle: "Answer in rough sketch form. Don't polish. Send back and I'll help compile."
-author: "Prepared for Mayungbo Oluwatobi Melvyn"
-date: ""
----
 
 # How to use this
 
