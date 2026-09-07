@@ -1,9 +1,3 @@
----
-title: "Pre-Master's Pathways — One Program, One Institution, Guaranteed Progression"
-subtitle: "Real, current programs for a Third Class / 2.02 GPA profile, verified against 2026 sources"
-author: "Prepared for Mayungbo Oluwatobi Melvyn"
-date: ""
----
 
 # Yes, this exists, and it's exactly what you described
 
