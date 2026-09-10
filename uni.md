@@ -1,9 +1,3 @@
----
-title: "Self-Funded Masters — Cheap Tuition + Realistic Part-Time Earning Power"
-subtitle: "Countries and universities matched to a Nigerian applicant with a 2.02/4.0 GPA, ranked by whether the math actually works"
-author: "Prepared for Mayungbo Oluwatobi Melvyn"
-date: ""
----
 
 # The actual question this document answers
 
