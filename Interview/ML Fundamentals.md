@@ -1,9 +1,3 @@
----
-title: "AI Engineer Interview Q&A — Part 3: Fine-tuning, Evaluation, and ML Fundamentals"
-subtitle: "Training specialization, the section that separates people who ship from people who demo, and the classical ML that still underpins everything"
-author: "Prepared for Mayungbo Oluwatobi Melvyn"
-date: ""
----
 
 # Part 3: Fine-tuning, Evaluation, and ML Fundamentals
 
