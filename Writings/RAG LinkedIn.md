@@ -1,9 +1,3 @@
----
-title: "Skeleton 1 — LinkedIn Post"
-subtitle: "Stand-alone, scroll-stopping, ends with a link to the full breakdown"
-author: "Prepared for Mayungbo Oluwatobi Melvyn"
-date: ""
----
 
 # What this post has to do differently from the long-form piece
 
